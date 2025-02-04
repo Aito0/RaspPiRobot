@@ -63,6 +63,26 @@ class ParticleSet:
 
             self.particles[idx] = (x, y, theta_new)
 
+class DisplaySquare:
+    def __init__(self, ps, D):
+        self.particles = ps
+        self.ofs = 10
+        self.scale = 1
+        self.D = D
+
+    def draw(self):
+        #x0, y0, x1, y1)
+        lines = [
+            (0, 0, 0, self.D),
+            (0, 0, self.D, 0),
+            (self.D, 0, self.D, self.D),
+            (0, self.D, self.D, self.D)
+        ]
+        for line in lines:
+            print("drawLine:" + str(line))
+
+        print("drawParticles:" + str(self.particles))
+
 
 class Sampler:
     def __init__(self, sigma):
