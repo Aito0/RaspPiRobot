@@ -2,6 +2,8 @@
 
 import random
 import math
+import time
+
 
 #### BrickPi3 init
 
@@ -71,7 +73,7 @@ class DisplaySquare:
         self.D = D
 
     def draw(self):
-        #x0, y0, x1, y1)
+        # x0, y0, x1, y1
         lines = [
             (0, 0, 0, self.D),
             (0, 0, self.D, 0),
@@ -93,20 +95,24 @@ class Sampler:
 
 ####
 class Robot:
-    def __init__(self, lw, rw, s):
+    def __init__(self, lw, rw, s, g):
         self.left_wheel = lw
         self.right_wheel = rw
         self.particles = ParticleSet(s)
+        self.graphics = DisplaySquare(self.particles, 400)
 
     def move_forward(self, mm):
         self.particles.after_moving_forward(mm)
+        self.graphics.draw()
 
-    def move_forward_repeat(self, mm, repeat):
+    def move_forward_repeat(self, mm, repeat, pause):
         for _ in range(repeat):
             self.move_forward(mm)
+            time.sleep(pause)
 
     def turn_left(self, degrees):
         self.particles.after_turning(degrees)
+        self.graphics.draw()
 
 
 sampler = Sampler(1)
