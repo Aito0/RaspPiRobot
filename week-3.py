@@ -116,6 +116,21 @@ class Robot:
         self.particles.after_turning(degrees)
         # self.graphics.draw()
 
+    # TODO
+    def navigateToWaypoint(self, Wx, Wy):
+        (x, y, theta) = self.particles.estimate_position()
+
+        dx = Wx - x
+        dy = Wy - y
+
+        # 1. Turn the robot to face the waypoint in a straight line
+        turn_angle_rad = math.atan(dy / dx)
+        self.turn_left(turn_angle_rad * 180 / math.pi)
+
+        # 2. Move in a straight line
+        D = math.sqrt(dx ** 2 + dy ** 2)
+        self.move_forward(D)
+
 
 rob = Robot(Config.LEFT_WHEEL, Config.RIGHT_WHEEL, 5, 5, 5)
 
