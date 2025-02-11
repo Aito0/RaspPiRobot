@@ -26,8 +26,8 @@ class Config:
     WHEEL_WIDTH = 212
 
     # Calibration constants
-    DIST_CONSTANT = 1.0
-    TURN_CONSTANT = 1.0
+    DIST_CONSTANT = 1.01
+    TURN_CONSTANT = 1.25
 
     # Thresholds (?)
     DISTANCE_THRESHOLD = 10
@@ -181,7 +181,7 @@ class Robot:
         BP.set_motor_limits(Config.RIGHT_WHEEL, 60, 120)
 
         target_mm = Config.WHEEL_WIDTH * 2 * (degrees / 360)
-        target_deg = 180 * target_mm / (math.pi * Config.WHEEL_RADIUS)
+        target_deg = 180 * target_mm / (math.pi * Config.WHEEL_RADIUS) * Config.TURN_CONSTANT
 
         print("target : ", target_deg)
 
@@ -224,12 +224,10 @@ class Robot:
 
 rob = Robot(5, 5, 5)
 
-waypoints = [(500, 0), (500, 500), (0, 0)]
+waypoints = [(0, 50)]
 
 try:
-    for wp in waypoints:
-        print("Going to " + str(wp))
-        rob.navigateToWaypoint(*wp)
+    rob.turn_left(90)
 
 except KeyboardInterrupt:
     print("Terminated: Ctrl+C pressed")
