@@ -1,0 +1,41 @@
+1.
+Min 4
+Max 255
+
+2.
+50 degrees approx
+
+3.
+20cm: 22
+40cm: 40
+60cm: 61
+80cm: 81
+100cm: 100
+
+4.
+39
+39
+38
+38
+38
+38
+37
+37
+39
+39
+Avg: 38.33
+
+100
+99
+99
+99
+100
+100
+100
+100
+100
+101
+Avg: 99.33
+
+5.
+If there are many obstacles in the robot's view then we have noticed there are hard-to-spot garbage values (e.g. chair slightly in front of robot). However, if we have a clear path like in an open field then there should not be any garbage values very far from ground.
