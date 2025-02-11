@@ -22,8 +22,8 @@ class Config:
     TURN_DPS = 150
 
     # Measurements
-    WHEEL_RADIUS = 23  ## mm
-    WHEEL_WIDTH = 37
+    WHEEL_RADIUS = 26.5  ## mm
+    WHEEL_WIDTH = 212
 
     # Calibration constants
     DIST_CONSTANT = 1.0
