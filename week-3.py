@@ -51,8 +51,8 @@ class ParticleSet:
             e = self.sampler.sample()
             f = self.sampler.sample()
 
-            x_new = x + (D + e) * math.cos(theta)
-            y_new = y + (D + e) * math.sin(theta)
+            x_new = x + (D + e) * math.cos(math.pi * theta / 180)
+            y_new = y + (D + e) * math.sin(math.pi * theta / 180)
             theta_new = theta + f
 
             self.particles[idx] = (x_new, y_new, theta_new)
@@ -95,7 +95,7 @@ class Sampler:
 
 ####
 class Robot:
-    def __init__(self, lw, rw, s, g):
+    def __init__(self, lw, rw, s):
         self.left_wheel = lw
         self.right_wheel = rw
         self.particles = ParticleSet(s)
@@ -103,7 +103,7 @@ class Robot:
 
     def move_forward(self, mm):
         self.particles.after_moving_forward(mm)
-        self.graphics.draw()
+        # self.graphics.draw()
 
     def move_forward_repeat(self, mm, repeat, pause):
         for _ in range(repeat):
@@ -112,7 +112,7 @@ class Robot:
 
     def turn_left(self, degrees):
         self.particles.after_turning(degrees)
-        self.graphics.draw()
+        # self.graphics.draw()
 
 
 sampler = Sampler(1)
@@ -120,10 +120,11 @@ rob = Robot(Config.LEFT_WHEEL, Config.RIGHT_WHEEL, sampler)
 
 try:
     for i in range(0, 3):
-        rob.move_forward_repeat(100, 4)
+        rob.move_forward_repeat(100, 4, 0.5)
         rob.turn_left(90)
+    rob.turn_left(180)
 
-    rob.move_forward_repeat(100, 4)
+    rob.move_forward_repeat(100, 4, 0.5)
 
     print(rob.particles.estimate_position())
 
