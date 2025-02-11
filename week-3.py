@@ -206,6 +206,39 @@ class Robot:
         self.particles.after_turning(degrees)
         self.graphics.draw()
 
+    def turn_right(self, degrees):
+        BP.offset_motor_encoder(Config.LEFT_WHEEL, BP.get_motor_encoder(Config.LEFT_WHEEL))
+        BP.offset_motor_encoder(Config.RIGHT_WHEEL, BP.get_motor_encoder(Config.RIGHT_WHEEL))
+
+        BP.set_motor_limits(Config.LEFT_WHEEL, 60, 120)
+        BP.set_motor_limits(Config.RIGHT_WHEEL, 60, 120)
+
+        target_mm = Config.WHEEL_WIDTH * 2 * (degrees / 360)
+        target_deg = 180 * target_mm / (math.pi * Config.WHEEL_RADIUS) * Config.TURN_CONSTANT
+
+        print("target : ", target_deg)
+
+        left_status = BP.get_motor_status(Config.LEFT_WHEEL)
+        right_status = BP.get_motor_status(Config.RIGHT_WHEEL)
+
+        BP.set_motor_position_kp(Config.LEFT_WHEEL, Config.LW_KP)
+        BP.set_motor_position_kp(Config.RIGHT_WHEEL, Config.RW_KP)
+        BP.set_motor_position_kd(Config.LEFT_WHEEL, Config.LW_KD)
+        BP.set_motor_position_kd(Config.RIGHT_WHEEL, Config.RW_KD)
+
+        BP.set_motor_position(Config.LEFT_WHEEL, target_deg)
+        BP.set_motor_position(Config.RIGHT_WHEEL, -target_deg)
+
+        while abs(left_status[2] - target_deg) >= Config.TURN_THRESHOLD and (
+                abs(right_status[2] - target_deg) >= Config.TURN_THRESHOLD):
+            left_status = BP.get_motor_status(Config.LEFT_WHEEL)
+            right_status = BP.get_motor_status(Config.RIGHT_WHEEL)
+
+            # print(left_status[0], left_status[1], left_status[2], left_status[3], right_status[0], right_status[1], right_status[2], right_status[3], sep=",")
+            time.sleep(0.02)
+        self.particles.after_turning(degrees)
+        self.graphics.draw()
+
     def navigateToWaypoint(self, Wx, Wy):
 
         (x, y, theta) = self.particles.estimate_position()
@@ -214,8 +247,10 @@ class Robot:
         dy = Wy - y
 
         # 1. Turn the robot to face the waypoint in a straight line
-        turn_angle_rad = math.atan2(dy, dx)
-        self.turn_left(turn_angle_rad * 180 / math.pi)
+        absolute_angle_rad = math.atan2(dy, dx)
+        turn_angle_deg = (absolute_angle_rad * 180 / math.pi) - theta
+
+        self.turn_left(turn_angle_deg)
 
         # 2. Move in a straight line
         D = math.sqrt(dx ** 2 + dy ** 2)
@@ -224,10 +259,11 @@ class Robot:
 
 rob = Robot(5, 5, 5)
 
-waypoints = [(0, 50)]
+waypoints = [(200, 0), (200, -200), (0, 0)]
 
 try:
-    rob.turn_left(90)
+    for wp in waypoints:
+        rob.navigateToWaypoint(*wp)
 
 except KeyboardInterrupt:
     print("Terminated: Ctrl+C pressed")
