@@ -99,10 +99,10 @@ class ParticleSet:
 class DisplaySquare:
     def __init__(self, ps, D):
         self.particles = ps
-        self.x_ofs = 0
-        self.y_ofs = 0
+        self.x_ofs = 50
+        self.y_ofs = 500
         self.x_scale = 1
-        self.y_scale = 1
+        self.y_scale = -1
         self.D = D
 
     def draw(self):
@@ -115,7 +115,7 @@ class DisplaySquare:
         ]
 
         lines_transformed = [(x0 * self.x_scale + self.x_ofs,
-                              y0 * self.y_scale + self.x_ofs,
+                              y0 * self.y_scale + self.y_ofs,
                               x1 * self.x_scale + self.x_ofs,
                               y1 * self.y_scale + self.y_ofs)
                              for x0, y0, x1, y1 in lines]
