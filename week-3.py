@@ -11,6 +11,16 @@ BP.reset_all()
 
 print("BrickPi3 loaded")
 
+def sign(x):
+    if x > 0:
+        return 1
+    else:
+        return -1
+
+def mymod(theta):
+    while abs(theta) > 180:
+        theta -= sign(theta) * 360
+    return theta
 
 #### Variables and constants
 class Config:
@@ -250,7 +260,8 @@ class Robot:
         absolute_angle_rad = math.atan2(dy, dx)
         absolute_angle_deg = (absolute_angle_rad * 180 / math.pi)
 
-        turn_angle_deg = absolute_angle_deg - theta
+        turn_angle_deg = mymod(absolute_angle_deg - theta)
+
         self.turn_left(turn_angle_deg)
 
         # 2. Move in a straight line
