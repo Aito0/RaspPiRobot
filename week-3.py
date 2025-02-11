@@ -30,8 +30,10 @@ class Config:
 class ParticleSet:
     NUMBER_OF_PARTICLES = 100
 
-    def __init__(self, s):
-        self.sampler = s
+    def __init__(self, e_sampler, f_sampler, g_sampler):
+        self.e_sampler = e_sampler
+        self.f_sampler = f_sampler
+        self.g_sampler = g_sampler
         self.particles = [(0.0, 0.0, 0.0)] * self.NUMBER_OF_PARTICLES
         self.weights = [1 / self.NUMBER_OF_PARTICLES] * self.NUMBER_OF_PARTICLES
 
@@ -48,8 +50,8 @@ class ParticleSet:
 
     def after_moving_forward(self, D):
         for idx, (x, y, theta) in enumerate(self.particles):
-            e = self.sampler.sample()
-            f = self.sampler.sample()
+            e = self.e_sampler.sample()
+            f = self.f_sampler.sample()
 
             x_new = x + (D + e) * math.cos(math.pi * theta / 180)
             y_new = y + (D + e) * math.sin(math.pi * theta / 180)
@@ -59,7 +61,7 @@ class ParticleSet:
 
     def after_turning(self, alpha):
         for idx, (x, y, theta) in enumerate(self.particles):
-            g = sampler.sample()
+            g = self.g_sampler.sample()
 
             theta_new = theta + alpha + g
 
@@ -95,10 +97,10 @@ class Sampler:
 
 ####
 class Robot:
-    def __init__(self, lw, rw, s):
+    def __init__(self, lw, rw, stddev_e, stddev_f, stddev_g):
         self.left_wheel = lw
         self.right_wheel = rw
-        self.particles = ParticleSet(s)
+        self.particles = ParticleSet(Sampler(stddev_e), Sampler(stddev_f), Sampler(stddev_g))
         self.graphics = DisplaySquare(self.particles, 400)
 
     def move_forward(self, mm):
@@ -115,8 +117,7 @@ class Robot:
         # self.graphics.draw()
 
 
-sampler = Sampler(1)
-rob = Robot(Config.LEFT_WHEEL, Config.RIGHT_WHEEL, sampler)
+rob = Robot(Config.LEFT_WHEEL, Config.RIGHT_WHEEL, 5, 5, 5)
 
 try:
     for i in range(0, 3):
