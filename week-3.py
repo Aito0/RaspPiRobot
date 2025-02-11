@@ -28,8 +28,8 @@ class Config:
     RIGHT_WHEEL = BP.PORT_C
 
     # Degrees per second
-    MOVE_DPS = 150
-    TURN_DPS = 150
+    MOVE_DPS = 180
+    TURN_DPS = 180
 
     # Measurements
     WHEEL_RADIUS = 26.5  ## mm
@@ -162,8 +162,8 @@ class Robot:
         BP.set_motor_position_kd(Config.LEFT_WHEEL, Config.LW_KD)
         BP.set_motor_position_kd(Config.RIGHT_WHEEL, Config.RW_KD)
 
-        BP.set_motor_limits(Config.LEFT_WHEEL, 60, 120)
-        BP.set_motor_limits(Config.RIGHT_WHEEL, 60, 120)
+        BP.set_motor_limits(Config.LEFT_WHEEL, 70, 180)
+        BP.set_motor_limits(Config.RIGHT_WHEEL, 70, 180)
 
         BP.set_motor_position(Config.LEFT_WHEEL, target)
         BP.set_motor_position(Config.RIGHT_WHEEL, target)
@@ -269,13 +269,15 @@ class Robot:
         self.move_forward(D)
 
 
-rob = Robot(5, 5, 5)
-
-waypoints = [(200, 0), (200, 200), (0, 0)]
+rob = Robot(1, 1, 1)
 
 try:
-    for wp in waypoints:
-        rob.navigateToWaypoint(*wp)
+    for _ in range(3):
+        rob.move_forward_repeat(100, 4, 0.5)
+        rob.turn_left(90)
+        time.sleep(0.5)
+    rob.move_forward_repeat(100, 4, 0.5)
+    rob.turn_left(90)
 
 except KeyboardInterrupt:
     print("Terminated: Ctrl+C pressed")
