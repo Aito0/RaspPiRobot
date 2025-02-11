@@ -248,8 +248,9 @@ class Robot:
 
         # 1. Turn the robot to face the waypoint in a straight line
         absolute_angle_rad = math.atan2(dy, dx)
-        turn_angle_deg = (absolute_angle_rad * 180 / math.pi) - theta
+        absolute_angle_deg = (absolute_angle_rad * 180 / math.pi)
 
+        turn_angle_deg = absolute_angle_deg - theta
         self.turn_left(turn_angle_deg)
 
         # 2. Move in a straight line
@@ -259,7 +260,7 @@ class Robot:
 
 rob = Robot(5, 5, 5)
 
-waypoints = [(200, 0), (200, -200), (0, 0)]
+waypoints = [(200, 0), (200, 200), (0, 0)]
 
 try:
     for wp in waypoints:
