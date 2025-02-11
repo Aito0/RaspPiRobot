@@ -214,7 +214,7 @@ class Robot:
         dy = Wy - y
 
         # 1. Turn the robot to face the waypoint in a straight line
-        turn_angle_rad = math.atan(dy / dx)
+        turn_angle_rad = math.atan2(dy, dx)
         self.turn_left(turn_angle_rad * 180 / math.pi)
 
         # 2. Move in a straight line
