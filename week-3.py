@@ -14,8 +14,8 @@ import time
 
 #### Variables and constants
 class Config:
-    LEFT_WHEEL = 0#BP.PORT_D
-    RIGHT_WHEEL = 0#BP.PORT_A
+    LEFT_WHEEL = BP.PORT_D
+    RIGHT_WHEEL = BP.PORT_C
 
     # Degrees per second
     MOVE_DPS = 120
@@ -23,7 +23,21 @@ class Config:
 
     # Measurements
     WHEEL_RADIUS = 23  ## mm
-    TIRE_WIDTH = 99999
+    TIRE_WIDTH = 150 # I guessed this number
+
+    # Calibration constants
+    DIST_CONSTANT = 1.0
+    TURN_CONSTANT = 1.0
+
+    # Thresholds (?)
+    DISTANCE_THRESHOLD = 0.2
+    TURN_THRESHOLD = 5
+
+    # PID consts
+    LW_KP = 10
+    RW_KP = 10
+    LW_KD = 10
+    RW_KD = 10
 
 #### Particle set
 
@@ -97,15 +111,42 @@ class Sampler:
 
 ####
 class Robot:
-    def __init__(self, lw, rw, stddev_e, stddev_f, stddev_g):
-        self.left_wheel = lw
-        self.right_wheel = rw
+    def __init__(self, stddev_e, stddev_f, stddev_g):
         self.particles = ParticleSet(Sampler(stddev_e), Sampler(stddev_f), Sampler(stddev_g))
         self.graphics = DisplaySquare(self.particles, 400)
 
     def move_forward(self, mm):
+        BP.offset_motor_encoder(Config.LEFT_WHEEL, BP.get_motor_encoder(Config.LEFT_WHEEL))
+        BP.offset_motor_encoder(Config.RIGHT_WHEEL, BP.get_motor_encoder(Config.RIGHT_WHEEL))
+
+        # target = 619.4
+        target = 180 * mm / (math.pi * Config.WHEEL_RADIUS) * Config.DIST_CONSTANT
+        # target = 350
+        print("target : ", target)
+
+        left_status = BP.get_motor_status(Config.LEFT_WHEEL)
+        right_status = BP.get_motor_status(Config.RIGHT_WHEEL)
+
+        BP.set_motor_position_kp(Config.LEFT_WHEEL, Config.LW_KP)
+        BP.set_motor_position_kp(Config.RIGHT_WHEEL, Config.RW_KP)
+        BP.set_motor_position_kd(Config.LEFT_WHEEL, Config.LW_KD)
+        BP.set_motor_position_kd(Config.RIGHT_WHEEL, Config.RW_KD)
+
+        BP.set_motor_limits(Config.LEFT_WHEEL, 60, 120)
+        BP.set_motor_limits(Config.RIGHT_WHEEL, 60, 120)
+
+        BP.set_motor_position(Config.LEFT_WHEEL, target)
+        BP.set_motor_position(Config.RIGHT_WHEEL, target)
+
+        while abs(left_status[2] - target) >= Config.DISTANCE_THRESHOLD and (
+                abs(right_status[2] - target) >= Config.DISTANCE_THRESHOLD):
+            left_status = BP.get_motor_status(Config.LEFT_WHEEL)
+            right_status = BP.get_motor_status(Config.RIGHT_WHEEL)
+            time.sleep(0.02)
+
+            # TODO: Robot is stuck in here
         self.particles.after_moving_forward(mm)
-        # self.graphics.draw()
+        self.graphics.draw()
 
     def move_forward_repeat(self, mm, repeat, pause):
         for _ in range(repeat):
@@ -113,11 +154,40 @@ class Robot:
             time.sleep(pause)
 
     def turn_left(self, degrees):
-        self.particles.after_turning(degrees)
-        # self.graphics.draw()
+        BP.offset_motor_encoder(Config.LEFT_WHEEL, BP.get_motor_encoder(Config.LEFT_WHEEL))
+        BP.offset_motor_encoder(Config.RIGHT_WHEEL, BP.get_motor_encoder(Config.RIGHT_WHEEL))
 
-    # TODO
+        BP.set_motor_limits(Config.LEFT_WHEEL, 60, 120)
+        BP.set_motor_limits(Config.RIGHT_WHEEL, 60, 120)
+
+        target_mm = Config.TIRE_WIDTH * 2 * (degrees / 360)
+        target_deg = 180 * target_mm / (math.pi * Config.WHEEL_RADIUS)
+
+        print("target : ", target_deg)
+
+        left_status = BP.get_motor_status(Config.LEFT_WHEEL)
+        right_status = BP.get_motor_status(Config.RIGHT_WHEEL)
+
+        BP.set_motor_position_kp(Config.LEFT_WHEEL, Config.LW_KP)
+        BP.set_motor_position_kp(Config.RIGHT_WHEEL, Config.RW_KP)
+        BP.set_motor_position_kd(Config.LEFT_WHEEL, Config.LW_KD)
+        BP.set_motor_position_kd(Config.RIGHT_WHEEL, Config.RW_KD)
+
+        BP.set_motor_position(Config.LEFT_WHEEL, -target_deg)
+        BP.set_motor_position(Config.RIGHT_WHEEL, target_deg)
+
+        while abs(left_status[2] - target_deg) >= Config.TURN_THRESHOLD and (
+                abs(right_status[2] - target_deg) >= Config.TURN_THRESHOLD):
+            left_status = BP.get_motor_status(Config.LEFT_WHEEL)
+            right_status = BP.get_motor_status(Config.RIGHT_WHEEL)
+
+            # print(left_status[0], left_status[1], left_status[2], left_status[3], right_status[0], right_status[1], right_status[2], right_status[3], sep=",")
+            time.sleep(0.02)
+        self.particles.after_turning(degrees)
+        self.graphics.draw()
+
     def navigateToWaypoint(self, Wx, Wy):
+
         (x, y, theta) = self.particles.estimate_position()
 
         dx = Wx - x
@@ -132,7 +202,7 @@ class Robot:
         self.move_forward(D)
 
 
-rob = Robot(Config.LEFT_WHEEL, Config.RIGHT_WHEEL, 5, 5, 5)
+rob = Robot(5, 5, 5)
 
 try:
     for i in range(0, 3):
