@@ -1,16 +1,16 @@
-# import brickpi3
+import brickpi3
 
 import random
 import math
 import time
 
-
 #### BrickPi3 init
 
-# BP = brickpi3.BrickPi3()
-# BP.reset_all()
-#
-# print("BrickPi3 loaded")
+BP = brickpi3.BrickPi3()
+BP.reset_all()
+
+print("BrickPi3 loaded")
+
 
 #### Variables and constants
 class Config:
@@ -18,26 +18,27 @@ class Config:
     RIGHT_WHEEL = BP.PORT_C
 
     # Degrees per second
-    MOVE_DPS = 120
-    TURN_DPS = 120
+    MOVE_DPS = 150
+    TURN_DPS = 150
 
     # Measurements
     WHEEL_RADIUS = 23  ## mm
-    TIRE_WIDTH = 150 # I guessed this number
+    WHEEL_WIDTH = 37
 
     # Calibration constants
     DIST_CONSTANT = 1.0
     TURN_CONSTANT = 1.0
 
     # Thresholds (?)
-    DISTANCE_THRESHOLD = 0.2
+    DISTANCE_THRESHOLD = 10
     TURN_THRESHOLD = 5
 
     # PID consts
-    LW_KP = 10
-    RW_KP = 10
+    LW_KP = 50
+    RW_KP = 50
     LW_KD = 10
     RW_KD = 10
+
 
 #### Particle set
 
@@ -50,6 +51,9 @@ class ParticleSet:
         self.g_sampler = g_sampler
         self.particles = [(0.0, 0.0, 0.0)] * self.NUMBER_OF_PARTICLES
         self.weights = [1 / self.NUMBER_OF_PARTICLES] * self.NUMBER_OF_PARTICLES
+
+    def __iter__(self):
+        return iter(self.particles)
 
     def estimate_position(self):
         x_bar = 0
@@ -81,6 +85,7 @@ class ParticleSet:
 
             self.particles[idx] = (x, y, theta_new)
 
+
 class DisplaySquare:
     def __init__(self, ps, D):
         self.particles = ps
@@ -99,20 +104,19 @@ class DisplaySquare:
             (0, self.D, self.D, self.D)
         ]
 
-        lines_transformed = [ (x0 * self.x_scale + self.x_ofs,
-                               y0 * self.y_scale + self.x_ofs,
-                               x1 * self.x_scale + self.x_ofs,
-                               y1 * self.y_scale + self.y_ofs)
-                              for x0, y0, x1, y1 in lines ]
+        lines_transformed = [(x0 * self.x_scale + self.x_ofs,
+                              y0 * self.y_scale + self.x_ofs,
+                              x1 * self.x_scale + self.x_ofs,
+                              y1 * self.y_scale + self.y_ofs)
+                             for x0, y0, x1, y1 in lines]
 
         for line in lines_transformed:
             print("drawLine:" + str(line))
 
-
-        particles_transformed = [ (x * self.x_scale + self.x_ofs,
-                                   y * self.y_scale + self.y_ofs,
-                                   theta)
-                                  for x, y, theta in self.particles ]
+        particles_transformed = [(x * self.x_scale + self.x_ofs,
+                                  y * self.y_scale + self.y_ofs,
+                                  theta)
+                                 for x, y, theta in self.particles]
 
         print("drawParticles:" + str(particles_transformed))
 
@@ -123,6 +127,7 @@ class Sampler:
 
     def sample(self):
         return random.gauss(mu=0, sigma=self.sigma)
+
 
 ####
 class Robot:
@@ -175,7 +180,7 @@ class Robot:
         BP.set_motor_limits(Config.LEFT_WHEEL, 60, 120)
         BP.set_motor_limits(Config.RIGHT_WHEEL, 60, 120)
 
-        target_mm = Config.TIRE_WIDTH * 2 * (degrees / 360)
+        target_mm = Config.WHEEL_WIDTH * 2 * (degrees / 360)
         target_deg = 180 * target_mm / (math.pi * Config.WHEEL_RADIUS)
 
         print("target : ", target_deg)
@@ -219,18 +224,15 @@ class Robot:
 
 rob = Robot(5, 5, 5)
 
+waypoints = [(500, 0), (500, 500), (0, 0)]
+
 try:
-    for i in range(0, 3):
-        rob.move_forward_repeat(100, 4, 0.5)
-        rob.turn_left(90)
-    rob.turn_left(180)
-
-    rob.move_forward_repeat(100, 4, 0.5)
-
-    print(rob.particles.estimate_position())
+    for wp in waypoints:
+        print("Going to " + str(wp))
+        rob.navigateToWaypoint(*wp)
 
 except KeyboardInterrupt:
     print("Terminated: Ctrl+C pressed")
-    # BP.reset_all()
+    BP.reset_all()
 
 
