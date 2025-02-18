@@ -49,6 +49,9 @@ class Config:
     LW_KD = 10
     RW_KD = 10
 
+    # Dist from sonar to centre
+    T = ...
+
 
 #### Particle set
 
@@ -60,10 +63,13 @@ class ParticleSet:
         self.f_sampler = f_sampler
         self.g_sampler = g_sampler
         self.particles = [(0.0, 0.0, 0.0)] * self.NUMBER_OF_PARTICLES
-        self.weights = [1 / self.NUMBER_OF_PARTICLES] * self.NUMBER_OF_PARTICLES
+        self.weights = self.init_weights()
 
     def __iter__(self):
         return iter(self.particles)
+    
+    def init_weights(self):
+        return [1 / self.NUMBER_OF_PARTICLES] * self.NUMBER_OF_PARTICLES
 
     def estimate_position(self):
         x_bar = 0
@@ -94,6 +100,32 @@ class ParticleSet:
             theta_new = theta + alpha + g
 
             self.particles[idx] = (x, y, theta_new)
+
+    def normalise_weights(self):
+        sum_w = sum(self.weights)
+
+        for i in range(len(self.weights)):
+            self.weights[i] /= sum_w
+
+    def resampliing_genetic(self):
+        cum_sum = 0
+        cum_sums = []
+        for weight in self.weights:
+            cum_sum += weight
+            cum_sums.append(cum_sum)
+
+        new_particles = []
+        for _ in range(self.NUMBER_OF_PARTICLES):
+            r = random.random(0,1)
+            i = 0
+
+            while cum_sums[i] <= r:
+                i += 1
+
+            new_particles.append(self.particles[i])
+
+        self.particles = new_particles
+        self.weights = self.init_weights()
 
 
 class DisplaySquare:
@@ -268,8 +300,37 @@ class Robot:
         D = math.sqrt(dx ** 2 + dy ** 2)
         self.move_forward(D)
 
+    def update_weight(self, z):
+        for particle in self.particles:
+            x, y, theta = particle.x, particle.y, particle.theta
+        cur_weight *= self.calculate_likelihood(x, y, theta, self.sonar())
+
+def calculate_likelihood(x, y, theta, z):
+    m = ... # calculated from x, y, theta and points
+    # NOTE UPDATE M USING T
+    z - m
+    # maybe check incidence angle
+    # if incidence too high return 1
+
+    # calc likelihood using gaussian (with constant) use sd (2-3cm)
+
 
 rob = Robot(1, 1, 1)
+
+traverse = [(84, 30), (180, 30), (180, 54), (138, 54), (138, 168), (114, 168), (114, 84), (84, 84), (84, 30)]
+
+
+points = {
+    "O": (0, 0),
+    "A": (0, 168),
+    "B": (84, 168),
+    "C": (84, 126),
+    "D": (84, 210),
+    "E": (168, 210),
+    "F": (168, 84),
+    "G": (210, 84),
+    "H": (210, 0),
+}
 
 try:
     for _ in range(3):
@@ -282,5 +343,4 @@ try:
 except KeyboardInterrupt:
     print("Terminated: Ctrl+C pressed")
     BP.reset_all()
-
 
