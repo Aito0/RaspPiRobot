@@ -301,13 +301,19 @@ class Simulator:
     def run_move_forward(self, cm):
         Robot.move_forward(cm)
         self.particles.after_moving_forward(cm)
+        self.graphics.draw(self.particles)
+        time.sleep(0.5)
         self.update_weight(Robot.read_sensor())
+        self.particles.resampling_genetic()
         self.graphics.draw(self.particles)
 
     def run_turn_left(self, degrees):
         Robot.turn_left(degrees)
         self.particles.after_turning(degrees)
+        self.graphics.draw(self.particles)
+        time.sleep(0.5)
         self.update_weight(Robot.read_sensor())
+        self.particles.resampling_genetic()
         self.graphics.draw(self.particles)
 
     def run_navigate_waypoint(self, waypoint, pause_seconds=0.2):
