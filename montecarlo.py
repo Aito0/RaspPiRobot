@@ -159,8 +159,8 @@ class Display:
     def __init__(self, lines):
         self.x_ofs = 50
         self.y_ofs = 500
-        self.x_scale = 1
-        self.y_scale = -1
+        self.x_scale = 2
+        self.y_scale = -2
         self.lines = lines
 
     def draw(self, ps):
