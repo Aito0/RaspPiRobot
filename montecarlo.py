@@ -68,10 +68,10 @@ class Config:
     TURN_THRESHOLD = 4.0
 
     # Standard deviations
-    STDDEV_e = 0.85
-    STDDEV_f = 0.3
-    STDDEV_g = 0.65
-    STDDEV_SENSOR = 1.2
+    STDDEV_e = 0.8
+    STDDEV_f = 0.5
+    STDDEV_g = 1
+    STDDEV_SENSOR = 2
 
     SENSOR_READ_ATTEMPTS = 35
 
@@ -348,7 +348,7 @@ class Simulator:
 
     def run_turn_left(self, degrees):
         while abs(degrees) > 0:
-            angle = min(abs(degrees), 50.0) * sign(degrees)
+            angle = min(abs(degrees), 46.0) * sign(degrees)
             self.run_turn_left_raw(angle)
             degrees -= angle
             time.sleep(0.1)
@@ -424,7 +424,12 @@ class Simulator:
             if m < 0:
                 m = float('inf')
 
-            likelihood = math.exp(-((z - m) ** 2) / (2 * Config.STDDEV_SENSOR ** 2))
+
+            beta = math.acos((mycos(theta) * (Ay - By) + mysin(theta) * (Bx - Ax)) / (((Ay - By) ** 2) + ((Bx - Ax) ** 2)) ** 0.5)
+            if beta > 50.0 * math.pi / 180.0:
+                likelihood = 1
+            else:
+                likelihood = math.exp(-((z - m) ** 2) / (2 * Config.STDDEV_SENSOR ** 2))
             likelihoods.append(likelihood)
 
         return max(likelihoods)
