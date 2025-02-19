@@ -154,8 +154,8 @@ class Display:
     def __init__(self, lines):
         self.x_ofs = 50
         self.y_ofs = 500
-        self.x_scale = 20
-        self.y_scale = -20
+        self.x_scale = 2
+        self.y_scale = -2
         self.lines = lines
 
     def draw(self, ps):
@@ -371,7 +371,7 @@ class Simulator:
     def update_weight(self, z):
         for i, particle in enumerate(self.particles):
             x, y, theta = particle
-            self.particles.weights[i] *= self.calculate_likelihood(x, y, theta, z, doPrint=(i % 3 == 0))
+            self.particles.weights[i] *= self.calculate_likelihood(x, y, theta, z, doPrint=(i % 10 == 0))
 
 
 sim = Simulator()
