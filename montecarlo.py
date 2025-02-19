@@ -63,6 +63,9 @@ class Config:
     STDDEV_f = 1
     STDDEV_g = 1
 
+    # In mm
+    STD_SENSOR = 2
+
 
 
 """
@@ -320,7 +323,7 @@ class Simulator:
             for (point, (x,y)) in points:
                 z = pass
 
-        likelihood = math.exp(-((z-m)**2) / (2 * (sigma)**2))
+        likelihood = math.exp(-((z-m)**2) / (2 * (Config.STD_SENSOR)**2))
 
         #m = ...  # calculated from x, y, theta and points
         # NOTE UPDATE M USING T
