@@ -48,7 +48,7 @@ class Config:
     WHEEL_WIDTH = 212
 
     # Dist from sonar to centre (mm)
-    T = 65
+    T = 116
 
     # Calibration constants
     DIST_CONSTANT = 1.01
