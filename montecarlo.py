@@ -44,33 +44,25 @@ class Config:
     MOVE_DPS = 180
     TURN_DPS = 180
 
-    # Measurements
-    WHEEL_RADIUS = 26.5  ## mm
-    WHEEL_WIDTH = 212
+    # Measurements (cm)
+    WHEEL_RADIUS = 2.65
+    WHEEL_WIDTH = 21.2
 
-    # Dist from sonar to centre (mm)
-    T = 116
+    # Dist from sonar to centre (cm)
+    T = 11.6
 
     # Calibration constants
     DIST_CONSTANT = 1.01
     TURN_CONSTANT = 1.25
 
-    # Thresholds (?)
+    # Thresholds (?) TODO
     DISTANCE_THRESHOLD = 10
     TURN_THRESHOLD = 5
-
-    # PID consts
-    #LW_KP = 50
-    #RW_KP = 50
-    #LW_KD = 10
-    #RW_KD = 10
 
     # Standard deviations
     STDDEV_e = 1
     STDDEV_f = 1
     STDDEV_g = 1
-
-    # In mm
     STDDEV_SENSOR = 2
 
     SENSOR_READ_ATTEMPTS = 20
@@ -94,12 +86,12 @@ class ParticleSet:
         return iter(self.particles)
     
     def init_weights(self):
-        return [1 / self.NUMBER_OF_PARTICLES] * self.NUMBER_OF_PARTICLES
+        return [1.0 / self.NUMBER_OF_PARTICLES] * self.NUMBER_OF_PARTICLES
 
     def estimate_position(self):
-        x_bar = 0
-        y_bar = 0
-        theta_bar = 0
+        x_bar = 0.0
+        y_bar = 0.0
+        theta_bar = 0.0
         for (x, y, theta), w in zip(self.particles, self.weights):
             x_bar += x * w
             y_bar += y * w
@@ -107,13 +99,15 @@ class ParticleSet:
 
         return x_bar, y_bar, theta_bar
 
-    def after_moving_forward(self, D):
+    def after_moving_forward(self, cm):
         for idx, (x, y, theta) in enumerate(self.particles):
             e = self.e_sampler.sample()
             f = self.f_sampler.sample()
-
-            x_new = x + (D + e) * math.cos(math.pi * theta / 180)
-            y_new = y + (D + e) * math.sin(math.pi * theta / 180)
+            dx = (cm + e) * np.cos(np.deg2rad(theta))
+            dy = (cm + e) * np.sin(np.deg2rad(theta))
+            print(f"Particles D:{cm}cm, e: {e}, dx: {dx}, dy: {dy}")
+            x_new = x + dx
+            y_new = y + dy
             theta_new = theta + f
 
             self.particles[idx] = (x_new, y_new, theta_new)
@@ -121,7 +115,6 @@ class ParticleSet:
     def after_turning(self, alpha):
         for idx, (x, y, theta) in enumerate(self.particles):
             g = self.g_sampler.sample()
-
             theta_new = theta + alpha + g
 
             self.particles[idx] = (x, y, theta_new)
@@ -134,7 +127,7 @@ class ParticleSet:
 
     def resampling_genetic(self):
         self.normalise_weights()
-        cum_sum = 0
+        cum_sum = 0.0
         cum_sums = []
         for weight in self.weights:
             cum_sum += weight
@@ -161,8 +154,8 @@ class Display:
     def __init__(self, lines):
         self.x_ofs = 50
         self.y_ofs = 500
-        self.x_scale = 2
-        self.y_scale = -2
+        self.x_scale = 20
+        self.y_scale = -20
         self.lines = lines
 
     def draw(self, ps):
@@ -205,11 +198,11 @@ class Robot:
         BP.set_motor_limits(Config.RIGHT_WHEEL, 70, 360)
         
     @staticmethod
-    def move_forward(mm):
+    def move_forward(cm):
         BP.offset_motor_encoder(Config.LEFT_WHEEL, BP.get_motor_encoder(Config.LEFT_WHEEL))
         BP.offset_motor_encoder(Config.RIGHT_WHEEL, BP.get_motor_encoder(Config.RIGHT_WHEEL))
 
-        target = 180 * mm / (math.pi * Config.WHEEL_RADIUS) * Config.DIST_CONSTANT
+        target = 180.0 * cm / (math.pi * Config.WHEEL_RADIUS) * Config.DIST_CONSTANT
         print("[forward] target :", target)
 
         left_status = BP.get_motor_status(Config.LEFT_WHEEL)
@@ -229,8 +222,8 @@ class Robot:
         BP.offset_motor_encoder(Config.LEFT_WHEEL, BP.get_motor_encoder(Config.LEFT_WHEEL))
         BP.offset_motor_encoder(Config.RIGHT_WHEEL, BP.get_motor_encoder(Config.RIGHT_WHEEL))
 
-        target_mm = Config.WHEEL_WIDTH * 2 * (degrees / 360)
-        target_deg = 180 * target_mm / (math.pi * Config.WHEEL_RADIUS) * Config.TURN_CONSTANT
+        target_cm = Config.WHEEL_WIDTH * 2.0 * (degrees / 360.0)
+        target_deg = 180.0 * target_cm / (math.pi * Config.WHEEL_RADIUS) * Config.TURN_CONSTANT
 
         print("[turn] target :", target_deg)
 
@@ -252,7 +245,7 @@ class Robot:
         value = None
         for _ in range(Config.SENSOR_READ_ATTEMPTS):
             try:
-                value = BP.get_sensor(Config.ULTRASONIC_SENSOR) * 10 + Config.T
+                value = BP.get_sensor(Config.ULTRASONIC_SENSOR) + Config.T
                 if value < 255:
                     break
             except:
@@ -270,15 +263,15 @@ class Simulator:
                  (84.0, 84.0), (84.0, 30.0)]
 
     points = {
-        "O": (0, 0),
-        "A": (0, 168),
-        "B": (84, 168),
-        "C": (84, 126),
-        "D": (84, 210),
-        "E": (168, 210),
-        "F": (168, 84),
-        "G": (210, 84),
-        "H": (210, 0),
+        "O": (0.0, 0.0),
+        "A": (0.0, 168.0),
+        "B": (84.0, 168.0),
+        "C": (84.0, 126.0),
+        "D": (84.0, 210.0),
+        "E": (168.0, 210.0),
+        "F": (168.0, 84.0),
+        "G": (210.0, 84.0),
+        "H": (210.0, 0.0),
     }
 
     walls = [("O", "A"), ("A", "B"), ("B", "C"), ("B", "D"), ("D", "E"), ("E", "F"), ("F", "G"), ("G", "H"), ("H", "O")]
@@ -297,16 +290,16 @@ class Simulator:
         Robot.init_bp()
 
     @staticmethod
-    def make_new_square(D):
-        lines = [(0, 0, 0, D),
-                (0, 0, D, 0),
-                (D, 0, D, D),
-                (0, D, D, D)]
+    def make_new_square(cm):
+        lines = [(0.0, 0.0, 0.0, cm),
+                (0.0, 0.0, cm, 0.0),
+                (cm, 0.0, cm, cm),
+                (0.0, cm, cm, cm)]
         Simulator(lines)
 
-    def run_move_forward(self, mm):
-        Robot.move_forward(mm)
-        self.particles.after_moving_forward(mm)
+    def run_move_forward(self, cm):
+        Robot.move_forward(cm)
+        self.particles.after_moving_forward(cm)
         self.update_weight(Robot.read_sensor())
         self.graphics.draw(self.particles)
 
@@ -317,9 +310,9 @@ class Simulator:
         self.graphics.draw(self.particles)
 
     def run_navigate_waypoint(self, waypoint, pause_seconds=0.2):
-        Wx, Wy = waypoint
+        Wx, Wy = waypoint # Should be in cm
 
-        (x, y, theta) = self.particles.estimate_position()
+        (x, y, theta) = self.particles.estimate_position() # Should be in cm
         dx = Wx - x
         dy = Wy - y
 
@@ -334,8 +327,8 @@ class Simulator:
         self.run_turn_left(turn_angle_deg)
 
         # 2. Move in a straight line
-        D = math.sqrt(dx ** 2 + dy ** 2)
-        self.run_move_forward(D * 10)
+        cm = math.sqrt(dx ** 2 + dy ** 2)
+        self.run_move_forward(cm)
 
         time.sleep(pause_seconds)
 
@@ -365,7 +358,7 @@ class Simulator:
 
                 m = ((By - Ay) * (Ax - x) - (Bx - Ax) * (Ay - y)) / ((By - Ay) * mycos(theta) - (Bx - Ax) * mysin(theta))
 
-                likelihood = math.exp(-((z-m)**2) / (2 * (Config.STDDEV_SENSOR)**2))
+                likelihood = math.exp(-((z-m)**2) / (2 * Config.STDDEV_SENSOR ** 2))
 
                 if doPrint:
                     print(self.points[A])
@@ -378,7 +371,7 @@ class Simulator:
     def update_weight(self, z):
         for i, particle in enumerate(self.particles):
             x, y, theta = particle
-            self.particles.weights[i] *= self.calculate_likelihood(x, y, theta, Robot.read_sensor(), doPrint=i % 3 == 0)
+            self.particles.weights[i] *= self.calculate_likelihood(x, y, theta, z, doPrint=(i % 3 == 0))
 
 
 sim = Simulator()
