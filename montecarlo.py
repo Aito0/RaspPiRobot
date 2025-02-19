@@ -57,7 +57,7 @@ class Config:
 
     # Thresholds
     DISTANCE_THRESHOLD = 1
-    TURN_THRESHOLD = 2.1
+    TURN_THRESHOLD = 2.2
 
     # Standard deviations
     STDDEV_e = 2
@@ -343,7 +343,7 @@ class Simulator:
         for waypoint in self.waypoints:
             self.run_navigate_waypoint(waypoint, pause_seconds)
 
-    def calculate_likelihood(self, x, y, theta, z, doPrint=False):
+    def calculate_likelihood_watson(self, x, y, theta, z, doPrint=False):
         for A, B in self.walls:
             Ax, Ay = self.points[A]
             Bx, By = self.points[B]
@@ -373,6 +373,19 @@ class Simulator:
 
                 return likelihood
 
+    def calculate_likelihood(self, x, y, theta, z, doPrint=False):
+        likelihoods = []
+        for A, B in self.walls:
+            Ax, Ay = self.points[A]
+            Bx, By = self.points[B]
+
+            m = ((By - Ay) * (Ax-x) - (Bx - Ax) * (Ay - y)) / ((By - Ay) * mycos(theta) - (Bx - Ax) * mysin(theta))
+
+            if m > 0:
+                likelihood = math.exp(-((z - m) ** 2) / (2 * Config.STDDEV_SENSOR ** 2))
+                likelihoods.append(likelihood)
+
+        return max(likelihoods)
 
 
     def update_weight(self, z):
