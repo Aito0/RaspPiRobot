@@ -64,14 +64,14 @@ class Config:
     TURN_CONSTANT = 1.30
 
     # Thresholds
-    DISTANCE_THRESHOLD = 2.5
-    TURN_THRESHOLD = 4
+    DISTANCE_THRESHOLD = 2.75
+    TURN_THRESHOLD = 4.0
 
     # Standard deviations
-    STDDEV_e = 1
-    STDDEV_f = 0.4
-    STDDEV_g = 0.7
-    STDDEV_SENSOR = 2
+    STDDEV_e = 0.85
+    STDDEV_f = 0.3
+    STDDEV_g = 0.65
+    STDDEV_SENSOR = 1.2
 
     SENSOR_READ_ATTEMPTS = 35
 
@@ -149,7 +149,7 @@ class ParticleSet:
             r = random.random()
             i = 0
 
-            while i < len(cum_sums) and cum_sums[i] <= r:
+            while i + 1 < len(cum_sums) and cum_sums[i] <= r:
                 i += 1
 
             new_particles.append(self.particles[i])
@@ -259,15 +259,19 @@ class Robot:
 
     @staticmethod
     def read_sensor():
-        value = None
+        N = 3
+
+        values = []
         for _ in range(Config.SENSOR_READ_ATTEMPTS):
             try:
-                value = BP.get_sensor(Config.ULTRASONIC_SENSOR) + Config.T
-                if value < 255:
+                v = BP.get_sensor(Config.ULTRASONIC_SENSOR) + Config.T
+                values.append(v)
+                if len(v) == N:
                     break
             except:
                 continue
 
+        value = float(sum(values)) / float(N)
         print(f"Read sensor: {value}cm")
         return value
 
@@ -417,7 +421,6 @@ class Simulator:
             Bx, By = self.points[B]
 
             m = ((By - Ay) * (Ax - x) - (Bx - Ax) * (Ay - y)) / ((By - Ay) * mycos(theta) - (Bx - Ax) * mysin(theta))
-
             if m < 0:
                 m = float('inf')
 
