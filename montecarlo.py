@@ -38,7 +38,7 @@ Variables and constants
 class Config:
     LEFT_WHEEL = BP.PORT_D
     RIGHT_WHEEL = BP.PORT_C
-    ULTRASONIC_SENSOR = BP.PORT_2
+    ULTRASONIC_SENSOR = BP.PORT_1
 
     # Degrees per second
     MOVE_DPS = 180
@@ -247,7 +247,15 @@ class Robot:
 
     @staticmethod
     def read_sensor():
-        return BP.get_sensor(Config.ULTRASONIC_SENSOR) * 10 + Config.T
+        value = None
+        for _ in range(15):
+            try:
+                value = BP.get_sensor(Config.ULTRASONIC_SENSOR) * 10 + Config.T
+                break
+            except:
+                continue
+
+        return value
 
 
 """
@@ -332,13 +340,10 @@ class Simulator:
         for waypoint in self.waypoints:
             self.run_navigate_waypoint(waypoint, pause_seconds)
 
-    def calculate_likelihood(self, x, y, theta, z):
+    def calculate_likelihood(self, x, y, theta, z, doPrint=False):
         for A, B in self.walls:
             Ax, Ay = self.points[A]
             Bx, By = self.points[B]
-
-            print(self.points[A])
-            print(self.points[B])
 
             part_pos = np.array([x, y]).T
             part_dir = np.array([mycos(theta), mysin(theta)]).T
@@ -359,6 +364,10 @@ class Simulator:
 
                 likelihood = math.exp(-((z-m)**2) / (2 * (Config.STDDEV_SENSOR)**2))
 
+                if doPrint:
+                    print(self.points[A])
+                    print(self.points[B])
+
                 return likelihood
 
 
@@ -366,7 +375,7 @@ class Simulator:
     def update_weight(self, z):
         for i, particle in enumerate(self.particles):
             x, y, theta = particle
-            self.particles.weights[i] *= self.calculate_likelihood(x, y, theta, Robot.read_sensor())
+            self.particles.weights[i] *= self.calculate_likelihood(x, y, theta, Robot.read_sensor(), doPrint=i % 3 == 0)
 
 
 sim = Simulator()
