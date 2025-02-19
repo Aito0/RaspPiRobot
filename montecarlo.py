@@ -281,16 +281,17 @@ class Simulator:
     def __init__(self):
         self.particles = ParticleSet(Config.STDDEV_e, Config.STDDEV_f, Config.STDDEV_g)
         self.graphics = Display.make_new_square(400)
+        self.graphics.draw(self.particles)
 
     def run_move_forward(self, mm):
         Robot.move_forward(mm)
-        self.update_weight(Robot.get_sensor())
+        self.update_weight(Robot.read_sensor())
         self.particles.after_moving_forward(mm)
         self.graphics.draw(self.particles)
 
     def run_turn_left(self, degrees):
         Robot.turn_left(degrees)
-        self.update_weight(Robot.get_sensor())
+        self.update_weight(Robot.read_sensor())
         self.particles.after_turning(degrees)
         self.graphics.draw(self.particles)
 
