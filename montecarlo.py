@@ -73,6 +73,8 @@ class Config:
     # In mm
     STDDEV_SENSOR = 2
 
+    SENSOR_READ_ATTEMPTS = 20
+
 
 
 """
@@ -248,10 +250,11 @@ class Robot:
     @staticmethod
     def read_sensor():
         value = None
-        for _ in range(15):
+        for _ in range(Config.SENSOR_READ_ATTEMPTS):
             try:
                 value = BP.get_sensor(Config.ULTRASONIC_SENSOR) * 10 + Config.T
-                break
+                if value < 255:
+                    break
             except:
                 continue
 
