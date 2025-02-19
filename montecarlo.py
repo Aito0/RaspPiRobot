@@ -279,6 +279,8 @@ class Simulator:
         "H": (210, 0),
     }
 
+    walls = [("O", "A"), ("A", "B"), ("B", "C"), ("B", "D"), ("D", "E"), ("E", "F"), ("F", "G"), ("G", "H"), ("H", "O")]
+
     def __init__(self):
         self.particles = ParticleSet(Config.STDDEV_e, Config.STDDEV_f, Config.STDDEV_g)
         self.graphics = Display.make_new_square(400)
