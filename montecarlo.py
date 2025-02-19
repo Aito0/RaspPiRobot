@@ -53,10 +53,10 @@ class Config:
     TURN_THRESHOLD = 5
 
     # PID consts
-    LW_KP = 50
-    RW_KP = 50
-    LW_KD = 10
-    RW_KD = 10
+    #LW_KP = 50
+    #RW_KP = 50
+    #LW_KD = 10
+    #RW_KD = 10
 
     # Standard deviations
     STDDEV_e = 1
@@ -208,11 +208,6 @@ class Robot:
         left_status = BP.get_motor_status(Config.LEFT_WHEEL)
         right_status = BP.get_motor_status(Config.RIGHT_WHEEL)
 
-        BP.set_motor_position_kp(Config.LEFT_WHEEL, Config.LW_KP)
-        BP.set_motor_position_kp(Config.RIGHT_WHEEL, Config.RW_KP)
-        BP.set_motor_position_kd(Config.LEFT_WHEEL, Config.LW_KD)
-        BP.set_motor_position_kd(Config.RIGHT_WHEEL, Config.RW_KD)
-
         BP.set_motor_limits(Config.LEFT_WHEEL, 70, 180)
         BP.set_motor_limits(Config.RIGHT_WHEEL, 70, 180)
 
@@ -240,11 +235,6 @@ class Robot:
 
         left_status = BP.get_motor_status(Config.LEFT_WHEEL)
         right_status = BP.get_motor_status(Config.RIGHT_WHEEL)
-
-        BP.set_motor_position_kp(Config.LEFT_WHEEL, Config.LW_KP)
-        BP.set_motor_position_kp(Config.RIGHT_WHEEL, Config.RW_KP)
-        BP.set_motor_position_kd(Config.LEFT_WHEEL, Config.LW_KD)
-        BP.set_motor_position_kd(Config.RIGHT_WHEEL, Config.RW_KD)
 
         BP.set_motor_position(Config.LEFT_WHEEL, -target_deg)
         BP.set_motor_position(Config.RIGHT_WHEEL, target_deg)
