@@ -205,6 +205,12 @@ Robot commands
 """
 class Robot:
     @staticmethod
+    def init_bp():
+        BP.set_sensor_type(Config.ULTRASONIC_SENSOR, BP.SENSOR_TYPE.NXT_ULTRASONIC)
+        BP.set_motor_limits(Config.LEFT_WHEEL, 70, 360)
+        BP.set_motor_limits(Config.RIGHT_WHEEL, 70, 360)
+        
+    @staticmethod
     def move_forward(mm):
         BP.offset_motor_encoder(Config.LEFT_WHEEL, BP.get_motor_encoder(Config.LEFT_WHEEL))
         BP.offset_motor_encoder(Config.RIGHT_WHEEL, BP.get_motor_encoder(Config.RIGHT_WHEEL))
@@ -214,9 +220,6 @@ class Robot:
 
         left_status = BP.get_motor_status(Config.LEFT_WHEEL)
         right_status = BP.get_motor_status(Config.RIGHT_WHEEL)
-
-        BP.set_motor_limits(Config.LEFT_WHEEL, 70, 180)
-        BP.set_motor_limits(Config.RIGHT_WHEEL, 70, 180)
 
         BP.set_motor_position(Config.LEFT_WHEEL, target)
         BP.set_motor_position(Config.RIGHT_WHEEL, target)
@@ -231,9 +234,6 @@ class Robot:
     def turn_left(degrees):
         BP.offset_motor_encoder(Config.LEFT_WHEEL, BP.get_motor_encoder(Config.LEFT_WHEEL))
         BP.offset_motor_encoder(Config.RIGHT_WHEEL, BP.get_motor_encoder(Config.RIGHT_WHEEL))
-
-        BP.set_motor_limits(Config.LEFT_WHEEL, 60, 120)
-        BP.set_motor_limits(Config.RIGHT_WHEEL, 60, 120)
 
         target_mm = Config.WHEEL_WIDTH * 2 * (degrees / 360)
         target_deg = 180 * target_mm / (math.pi * Config.WHEEL_RADIUS) * Config.TURN_CONSTANT
@@ -282,6 +282,7 @@ class Simulator:
         self.particles = ParticleSet(Config.STDDEV_e, Config.STDDEV_f, Config.STDDEV_g)
         self.graphics = Display.make_new_square(400)
         self.graphics.draw(self.particles)
+        Robot.init_bp()
 
     def run_move_forward(self, mm):
         Robot.move_forward(mm)
