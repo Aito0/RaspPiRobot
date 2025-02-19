@@ -284,11 +284,13 @@ class Simulator:
 
     def run_move_forward(self, mm):
         Robot.move_forward(mm)
+        self.update_weight(Robot.get_sensor())
         self.particles.after_moving_forward(mm)
         self.graphics.draw(self.particles)
 
     def run_turn_left(self, degrees):
         Robot.turn_left(degrees)
+        self.update_weight(Robot.get_sensor())
         self.particles.after_turning(degrees)
         self.graphics.draw(self.particles)
 
