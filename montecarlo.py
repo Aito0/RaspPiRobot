@@ -318,7 +318,7 @@ class Simulator:
         for waypoint in self.waypoints:
             self.run_navigate_waypoint(waypoint, pause_seconds)
 
-    def calculate_likelihood(x, y, theta, z):
+    def calculate_likelihood(self, x, y, theta, z):
         for particle in self.particles:
             for (point, (x,y)) in points:
                 z = pass
@@ -334,9 +334,9 @@ class Simulator:
         # calc likelihood using gaussian (with constant) use sd (2-3cm)
 
     def update_weight(self, z):
-        for particle in self.particles:
-            x, y, theta = particle.x, particle.y, particle.theta
-        cur_weight *= self.calculate_likelihood(x, y, theta, Robot.read_sensor())
+        for i, particle in enumerate(self.particles):
+            x, y, theta = particle
+            self.particles.weights[i] *= self.calculate_likelihood(x, y, theta, Robot.read_sensor())
 
 
 sim = Simulator()
