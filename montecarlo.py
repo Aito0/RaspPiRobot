@@ -254,7 +254,9 @@ class Robot:
 Controller for everything
 """
 class Simulator:
-    waypoints = [(84, 30), (180, 30), (180, 54), (138, 54), (138, 168), (114, 168), (114, 84), (84, 84), (84, 30)]
+    # Waypoint 1 origin: (84.0, 30.0)
+    waypoints = [(180.0, 30.0), (180.0, 54.0), (138.0, 54.0), (138.0, 168.0), (114.0, 168.0), (114.0, 84.0),
+                 (84.0, 84.0), (84.0, 30.0)]
 
     points = {
         "O": (0, 0),
@@ -277,7 +279,8 @@ class Simulator:
     def __init__(self, lines=None):
         if lines is None:
             lines = Simulator.walls_to_lines()
-        self.particles = ParticleSet(Config.STDDEV_e, Config.STDDEV_f, Config.STDDEV_g)
+
+        self.particles = ParticleSet(Config.STDDEV_e, Config.STDDEV_f, Config.STDDEV_g, origin=(84.0, 30.0, 0.0))
         self.graphics = Display(lines)
         self.graphics.draw(self.particles)
         Robot.init_bp()
@@ -309,9 +312,11 @@ class Simulator:
         dx = Wx - x
         dy = Wy - y
 
+        print("At", x, y, " and going to", Wx, Wy)
+
         # 1. Turn the robot to face the waypoint in a straight line
         absolute_angle_rad = math.atan2(dy, dx)
-        absolute_angle_deg = (absolute_angle_rad * 180 / math.pi)
+        absolute_angle_deg = (absolute_angle_rad * 180.0 / math.pi)
 
         turn_angle_deg = mymod(absolute_angle_deg - theta)
 
@@ -319,7 +324,7 @@ class Simulator:
 
         # 2. Move in a straight line
         D = math.sqrt(dx ** 2 + dy ** 2)
-        self.run_move_forward(D)
+        self.run_move_forward(D * 10)
 
         time.sleep(pause_seconds)
 
