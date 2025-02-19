@@ -25,6 +25,12 @@ def mymod(theta):
         theta -= sign(theta) * 360
     return theta
 
+def mycos(theta):
+    return math.cos(theta * math.pi / 360)
+
+def mysin(theta):
+    return math.sin(theta * math.pi / 360)
+
 """
 Variables and constants
 """
@@ -311,19 +317,28 @@ class Simulator:
             self.run_navigate_waypoint(waypoint, pause_seconds)
 
     def calculate_likelihood(self, x, y, theta, z):
-        for particle in self.particles:
-            for (point, (x,y)) in points:
-                z = pass
+        m = None
+        for A, B in self.walls:
+            Ax, Ay = self.points[A]
+            Bx, By = self.points[B]
 
-        likelihood = math.exp(-((z-m)**2) / (2 * (Config.STDDEV_SENSOR)**2))
+            beta = math.acos((mycos(theta) * (Ay - By) + mysin(theta) * (Bx - Ax)) / (((Ay - By)**2) + ((Bx - Ax)**2))**0.5)
+            
+            max_angle = math.pi / 4
+            if beta > max_angle:
+                continue
 
-        #m = ...  # calculated from x, y, theta and points
-        # NOTE UPDATE M USING T
-        #z - m
-        # maybe check incidence angle
-        # if incidence too high return 1
+            m_new = ((By - Ay) * (Ax - x) - (Bx - Ax) * (Ay - y)) / ((By - Ay) * mycos(theta) - (Bx - Ax) * mysin(theta))
 
-        # calc likelihood using gaussian (with constant) use sd (2-3cm)
+            if m is None or z - m > z - m_new:
+                m = m_new
+
+        if m is not None:
+            likelihood = math.exp(-((z-m)**2) / (2 * (Config.STDDEV_SENSOR)**2))
+        else: 
+            likelihood = 1
+
+        return likelihood
 
     def update_weight(self, z):
         for i, particle in enumerate(self.particles):
