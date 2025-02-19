@@ -41,8 +41,8 @@ class Config:
     ULTRASONIC_SENSOR = BP.PORT_1
 
     # Degrees per second
-    MOVE_DPS = 180
-    TURN_DPS = 180
+    MOVE_DPS = 150
+    TURN_DPS = 150
 
     # Measurements (cm)
     WHEEL_RADIUS = 2.65
@@ -52,20 +52,20 @@ class Config:
     T = 11.6
 
     # Calibration constants
-    DIST_CONSTANT = 1.01
-    TURN_CONSTANT = 1.25
+    DIST_CONSTANT = 0.98
+    TURN_CONSTANT = 1.30
 
     # Thresholds (?) TODO
     DISTANCE_THRESHOLD = 10
     TURN_THRESHOLD = 5
 
     # Standard deviations
-    STDDEV_e = 1
-    STDDEV_f = 1
-    STDDEV_g = 1
+    STDDEV_e = 2
+    STDDEV_f = 2
+    STDDEV_g = 2
     STDDEV_SENSOR = 2
 
-    SENSOR_READ_ATTEMPTS = 20
+    SENSOR_READ_ATTEMPTS = 25
 
 
 
@@ -251,6 +251,7 @@ class Robot:
             except:
                 continue
 
+        print(f"Read sensor: {value}cm")
         return value
 
 
@@ -332,7 +333,7 @@ class Simulator:
 
         time.sleep(pause_seconds)
 
-    def run_navigate_all_waypoints(self, pause_seconds=0.2):
+    def run_navigate_all_waypoints(self, pause_seconds=0.5):
         for waypoint in self.waypoints:
             self.run_navigate_waypoint(waypoint, pause_seconds)
 
