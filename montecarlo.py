@@ -31,6 +31,7 @@ Variables and constants
 class Config:
     LEFT_WHEEL = BP.PORT_D
     RIGHT_WHEEL = BP.PORT_C
+    ULTRASONIC_SENSOR = BP.PORT_2
 
     # Degrees per second
     MOVE_DPS = 180
@@ -39,6 +40,9 @@ class Config:
     # Measurements
     WHEEL_RADIUS = 26.5  ## mm
     WHEEL_WIDTH = 212
+
+    # Dist from sonar to centre (mm)
+    T = 65
 
     # Calibration constants
     DIST_CONSTANT = 1.01
@@ -59,8 +63,6 @@ class Config:
     STDDEV_f = 1
     STDDEV_g = 1
 
-    # Dist from sonar to centre (mm)
-    T = 5
 
 
 """
@@ -251,6 +253,11 @@ class Robot:
 
             time.sleep(0.02)
 
+    @staticmethod
+    def read_sensor():
+        return BP.get_sensor(Config.ULTRASONIC_SENSOR) * 10 + Config.T
+
+
 """
 Controller for everything
 """
@@ -268,7 +275,6 @@ class Simulator:
         "G": (210, 84),
         "H": (210, 0),
     }
-    walls = [("O", "A"), ("A", "B"), ("B", "C"), ("B", "D"), ("D", "E"), ("E", "F"), ("F", "G"), ("G", "H"), ("H", "O")]
 
     def __init__(self):
         self.particles = ParticleSet(Config.STDDEV_e, Config.STDDEV_f, Config.STDDEV_g)
@@ -310,7 +316,12 @@ class Simulator:
             self.run_navigate_waypoint(waypoint, pause_seconds)
 
     def calculate_likelihood(x, y, theta, z):
-        pass
+        for particle in self.particles:
+            for (point, (x,y)) in points:
+                z = pass
+
+        likelihood = math.exp(-((z-m)**2) / (2 * (sigma)**2))
+
         #m = ...  # calculated from x, y, theta and points
         # NOTE UPDATE M USING T
         #z - m
@@ -320,10 +331,9 @@ class Simulator:
         # calc likelihood using gaussian (with constant) use sd (2-3cm)
 
     def update_weight(self, z):
-        pass
-    #     for particle in self.particles:
-    #         x, y, theta = particle.x, particle.y, particle.theta
-    #     cur_weight *= self.calculate_likelihood(x, y, theta, self.sonar())
+        for particle in self.particles:
+            x, y, theta = particle.x, particle.y, particle.theta
+        cur_weight *= self.calculate_likelihood(x, y, theta, Robot.read_sensor())
 
 
 sim = Simulator()
