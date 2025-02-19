@@ -332,6 +332,9 @@ class Simulator:
             Ax, Ay = self.points[A]
             Bx, By = self.points[B]
 
+            print(self.points[A])
+            print(self.points[B])
+
             part_pos = np.array([x, y]).T
             part_dir = np.array([mycos(theta), mysin(theta)]).T
 
