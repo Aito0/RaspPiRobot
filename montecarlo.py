@@ -163,15 +163,6 @@ class Display:
         self.y_scale = -1
         self.lines = lines
 
-    @staticmethod
-    def make_new_square(D):
-        lines = [(0, 0, 0, D),
-                (0, 0, D, 0),
-                (D, 0, D, D),
-                (0, D, D, D)]
-
-        return Display(lines)
-
     def draw(self, ps):
         lines_transformed = [(x0 * self.x_scale + self.x_ofs,
                               y0 * self.y_scale + self.y_ofs,
@@ -279,11 +270,25 @@ class Simulator:
 
     walls = [("O", "A"), ("A", "B"), ("B", "C"), ("B", "D"), ("D", "E"), ("E", "F"), ("F", "G"), ("G", "H"), ("H", "O")]
 
-    def __init__(self):
+    @staticmethod
+    def walls_to_lines():
+        return [(*Simulator.points[a], *Simulator.points[b]) for a, b in Simulator.walls]
+
+    def __init__(self, lines=None):
+        if lines is None:
+            lines = Simulator.walls_to_lines()
         self.particles = ParticleSet(Config.STDDEV_e, Config.STDDEV_f, Config.STDDEV_g)
-        self.graphics = Display.make_new_square(400)
+        self.graphics = Display(lines)
         self.graphics.draw(self.particles)
         Robot.init_bp()
+
+    @staticmethod
+    def make_new_square(D):
+        lines = [(0, 0, 0, D),
+                (0, 0, D, 0),
+                (D, 0, D, D),
+                (0, D, D, D)]
+        Simulator(lines)
 
     def run_move_forward(self, mm):
         Robot.move_forward(mm)
