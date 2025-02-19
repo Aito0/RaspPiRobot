@@ -57,7 +57,7 @@ class Config:
 
     # Thresholds
     DISTANCE_THRESHOLD = 1
-    TURN_THRESHOLD = 2.2
+    TURN_THRESHOLD = 3
 
     # Standard deviations
     STDDEV_e = 2
