@@ -338,7 +338,7 @@ class Simulator:
             wall_pos = np.array([Ax, Ay]).T
             wall_dir = np.array([Ax - Bx, Ay - By]).T
 
-            _, _, rank = np.linalg.lstsq(np.array([part_dir, -wall_dir]).T, part_pos - wall_pos)[:3]
+            _, _, rank = np.linalg.lstsq(np.array([part_dir, -wall_dir]).T, part_pos - wall_pos, rcond=None)[:3]
             if rank == 2:
                 # particle is pointing to wall for A & B
                 beta = math.acos((mycos(theta) * (Ay - By) + mysin(theta) * (Bx - Ax)) / (((Ay - By)**2) + ((Bx - Ax)**2))**0.5)
