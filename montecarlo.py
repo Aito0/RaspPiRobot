@@ -130,6 +130,7 @@ class ParticleSet:
             self.weights[i] /= sum_w
 
     def resampling_genetic(self):
+        self.normalise_weights()
         cum_sum = 0
         cum_sums = []
         for weight in self.weights:
