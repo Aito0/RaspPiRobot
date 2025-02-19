@@ -49,8 +49,8 @@ class Config:
     ULTRASONIC_SENSOR = BP.PORT_1
 
     # Degrees per second
-    MOVE_DPS = 150
-    TURN_DPS = 150
+    MOVE_DPS = 60
+    TURN_DPS = 60
 
     # Measurements (cm)
     WHEEL_RADIUS = 2.65
@@ -64,16 +64,16 @@ class Config:
     TURN_CONSTANT = 1.30
 
     # Thresholds
-    DISTANCE_THRESHOLD = 2
-    TURN_THRESHOLD = 3
+    DISTANCE_THRESHOLD = 2.5
+    TURN_THRESHOLD = 4
 
     # Standard deviations
-    STDDEV_e = 2
-    STDDEV_f = 2
-    STDDEV_g = 2
+    STDDEV_e = 1
+    STDDEV_f = 0.4
+    STDDEV_g = 0.7
     STDDEV_SENSOR = 2
 
-    SENSOR_READ_ATTEMPTS = 25
+    SENSOR_READ_ATTEMPTS = 35
 
 
 """
@@ -82,7 +82,7 @@ Particle modelling
 
 
 class ParticleSet:
-    NUMBER_OF_PARTICLES = 100
+    NUMBER_OF_PARTICLES = 200
 
     def __init__(self, e, f, g, origin=(0.0, 0.0, 0.0)):
         self.e_sampler = Sampler(e)
@@ -114,7 +114,6 @@ class ParticleSet:
             f = self.f_sampler.sample()
             dx = (cm + e) * np.cos(np.deg2rad(theta))
             dy = (cm + e) * np.sin(np.deg2rad(theta))
-            print(f"Particles D:{cm}cm, e: {e}, dx: {dx}, dy: {dy}")
             x_new = x + dx
             y_new = y + dy
             theta_new = theta + f
@@ -130,6 +129,9 @@ class ParticleSet:
 
     def normalise_weights(self):
         sum_w = sum(self.weights)
+
+        if sum_w == 0:
+            return self.init_weights()
 
         for i in range(len(self.weights)):
             self.weights[i] /= sum_w
@@ -147,7 +149,7 @@ class ParticleSet:
             r = random.random()
             i = 0
 
-            while cum_sums[i] <= r:
+            while i < len(cum_sums) and cum_sums[i] <= r:
                 i += 1
 
             new_particles.append(self.particles[i])
@@ -315,7 +317,7 @@ class Simulator:
                  (0.0, cm, cm, cm)]
         Simulator(lines)
 
-    def run_move_forward(self, cm):
+    def run_move_forward_raw(self, cm):
         Robot.move_forward(cm)
         self.particles.after_moving_forward(cm)
         self.graphics.draw(self.particles)
@@ -324,7 +326,7 @@ class Simulator:
         self.particles.resampling_genetic()
         self.graphics.draw(self.particles)
 
-    def run_turn_left(self, degrees):
+    def run_turn_left_raw(self, degrees):
         Robot.turn_left(degrees)
         self.particles.after_turning(degrees)
         self.graphics.draw(self.particles)
@@ -332,6 +334,21 @@ class Simulator:
         self.update_weight(Robot.read_sensor())
         self.particles.resampling_genetic()
         self.graphics.draw(self.particles)
+
+    def run_move_forward(self, cm):
+        while cm > 0:
+            dist = min(cm, 30.0)
+            self.run_move_forward_raw(dist)
+            cm -= dist
+            time.sleep(0.1)
+
+    def run_turn_left(self, degrees):
+        while abs(degrees) > 0:
+            angle = min(abs(degrees), 50.0) * sign(degrees)
+            self.run_turn_left_raw(angle)
+            degrees -= angle
+            time.sleep(0.1)
+
 
     def run_navigate_waypoint(self, waypoint, pause_seconds=0.2):
         Wx, Wy = waypoint  # Should be in cm
@@ -341,17 +358,18 @@ class Simulator:
         dy = Wy - y
 
         print("At", x, y, " and going to", Wx, Wy)
-
         # 1. Turn the robot to face the waypoint in a straight line
         absolute_angle_rad = math.atan2(dy, dx)
         absolute_angle_deg = (absolute_angle_rad * 180.0 / math.pi)
 
         turn_angle_deg = mymod(absolute_angle_deg - theta)
 
+        print(f"1. run_turn_left {turn_angle_deg}")
         self.run_turn_left(turn_angle_deg)
 
         # 2. Move in a straight line
         cm = math.sqrt(dx ** 2 + dy ** 2)
+        print(f"2. run_move_forward {cm}")
         self.run_move_forward(cm)
 
         time.sleep(pause_seconds)
@@ -399,6 +417,9 @@ class Simulator:
             Bx, By = self.points[B]
 
             m = ((By - Ay) * (Ax - x) - (Bx - Ax) * (Ay - y)) / ((By - Ay) * mycos(theta) - (Bx - Ax) * mysin(theta))
+
+            if m < 0:
+                m = float('inf')
 
             likelihood = math.exp(-((z - m) ** 2) / (2 * Config.STDDEV_SENSOR ** 2))
             likelihoods.append(likelihood)
