@@ -64,7 +64,7 @@ class Config:
     TURN_CONSTANT = 1.30
 
     # Thresholds
-    DISTANCE_THRESHOLD = 1.5
+    DISTANCE_THRESHOLD = 2
     TURN_THRESHOLD = 3
 
     # Standard deviations
