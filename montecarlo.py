@@ -15,26 +15,34 @@ print("BrickPi3 loaded")
 """
 Custom maths functions
 """
+
+
 def sign(x):
     if x > 0:
         return 1
     else:
         return -1
 
+
 def mymod(theta):
     while abs(theta) > 180:
         theta -= sign(theta) * 360
     return theta
 
+
 def mycos(theta):
     return math.cos(theta * math.pi / 360)
+
 
 def mysin(theta):
     return math.sin(theta * math.pi / 360)
 
+
 """
 Variables and constants
 """
+
+
 class Config:
     LEFT_WHEEL = BP.PORT_D
     RIGHT_WHEEL = BP.PORT_C
@@ -68,10 +76,11 @@ class Config:
     SENSOR_READ_ATTEMPTS = 25
 
 
-
 """
 Particle modelling
 """
+
+
 class ParticleSet:
     NUMBER_OF_PARTICLES = 100
 
@@ -84,7 +93,7 @@ class ParticleSet:
 
     def __iter__(self):
         return iter(self.particles)
-    
+
     def init_weights(self):
         return [1.0 / self.NUMBER_OF_PARTICLES] * self.NUMBER_OF_PARTICLES
 
@@ -150,6 +159,8 @@ class ParticleSet:
 """
 Graphics handler
 """
+
+
 class Display:
     def __init__(self, lines):
         self.x_ofs = 50
@@ -179,6 +190,8 @@ class Display:
 """
 Gaussian sampler
 """
+
+
 class Sampler:
     def __init__(self, sigma):
         self.sigma = sigma
@@ -190,13 +203,15 @@ class Sampler:
 """
 Robot commands
 """
+
+
 class Robot:
     @staticmethod
     def init_bp():
         BP.set_sensor_type(Config.ULTRASONIC_SENSOR, BP.SENSOR_TYPE.NXT_ULTRASONIC)
         BP.set_motor_limits(Config.LEFT_WHEEL, 70, 360)
         BP.set_motor_limits(Config.RIGHT_WHEEL, 70, 360)
-        
+
     @staticmethod
     def move_forward(cm):
         BP.offset_motor_encoder(Config.LEFT_WHEEL, BP.get_motor_encoder(Config.LEFT_WHEEL))
@@ -258,6 +273,8 @@ class Robot:
 """
 Controller for everything
 """
+
+
 class Simulator:
     # Waypoint 1 origin: (84.0, 30.0)
     waypoints = [(180.0, 30.0), (180.0, 54.0), (138.0, 54.0), (138.0, 168.0), (114.0, 168.0), (114.0, 84.0),
@@ -293,9 +310,9 @@ class Simulator:
     @staticmethod
     def make_new_square(cm):
         lines = [(0.0, 0.0, 0.0, cm),
-                (0.0, 0.0, cm, 0.0),
-                (cm, 0.0, cm, cm),
-                (0.0, cm, cm, cm)]
+                 (0.0, 0.0, cm, 0.0),
+                 (cm, 0.0, cm, cm),
+                 (0.0, cm, cm, cm)]
         Simulator(lines)
 
     def run_move_forward(self, cm):
@@ -317,9 +334,9 @@ class Simulator:
         self.graphics.draw(self.particles)
 
     def run_navigate_waypoint(self, waypoint, pause_seconds=0.2):
-        Wx, Wy = waypoint # Should be in cm
+        Wx, Wy = waypoint  # Should be in cm
 
-        (x, y, theta) = self.particles.estimate_position() # Should be in cm
+        (x, y, theta) = self.particles.estimate_position()  # Should be in cm
         dx = Wx - x
         dy = Wy - y
 
@@ -357,15 +374,17 @@ class Simulator:
             _, _, rank = np.linalg.lstsq(np.array([part_dir, -wall_dir]).T, part_pos - wall_pos, rcond=None)[:3]
             if rank == 2:
                 # particle is pointing to wall for A & B
-                beta = math.acos((mycos(theta) * (Ay - By) + mysin(theta) * (Bx - Ax)) / (((Ay - By)**2) + ((Bx - Ax)**2))**0.5)
-                
+                beta = math.acos((mycos(theta) * (Ay - By) + mysin(theta) * (Bx - Ax)) / (
+                            ((Ay - By) ** 2) + ((Bx - Ax) ** 2)) ** 0.5)
+
                 max_angle = math.pi / 4
                 if beta > max_angle:
                     return 1
 
-                m = ((By - Ay) * (Ax - x) - (Bx - Ax) * (Ay - y)) / ((By - Ay) * mycos(theta) - (Bx - Ax) * mysin(theta))
+                m = ((By - Ay) * (Ax - x) - (Bx - Ax) * (Ay - y)) / (
+                            (By - Ay) * mycos(theta) - (Bx - Ax) * mysin(theta))
 
-                likelihood = math.exp(-((z-m)**2) / (2 * Config.STDDEV_SENSOR ** 2))
+                likelihood = math.exp(-((z - m) ** 2) / (2 * Config.STDDEV_SENSOR ** 2))
 
                 if doPrint:
                     print(self.points[A])
@@ -379,14 +398,12 @@ class Simulator:
             Ax, Ay = self.points[A]
             Bx, By = self.points[B]
 
-            m = ((By - Ay) * (Ax-x) - (Bx - Ax) * (Ay - y)) / ((By - Ay) * mycos(theta) - (Bx - Ax) * mysin(theta))
+            m = ((By - Ay) * (Ax - x) - (Bx - Ax) * (Ay - y)) / ((By - Ay) * mycos(theta) - (Bx - Ax) * mysin(theta))
 
-            if m > 0:
-                likelihood = math.exp(-((z - m) ** 2) / (2 * Config.STDDEV_SENSOR ** 2))
-                likelihoods.append(likelihood)
+            likelihood = math.exp(-((z - m) ** 2) / (2 * Config.STDDEV_SENSOR ** 2))
+            likelihoods.append(likelihood)
 
         return max(likelihoods)
-
 
     def update_weight(self, z):
         for i, particle in enumerate(self.particles):
