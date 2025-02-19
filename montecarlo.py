@@ -55,9 +55,9 @@ class Config:
     DIST_CONSTANT = 0.98
     TURN_CONSTANT = 1.30
 
-    # Thresholds (?) TODO
-    DISTANCE_THRESHOLD = 10
-    TURN_THRESHOLD = 5
+    # Thresholds (?) TODO?
+    DISTANCE_THRESHOLD = 2
+    TURN_THRESHOLD = 2
 
     # Standard deviations
     STDDEV_e = 2
