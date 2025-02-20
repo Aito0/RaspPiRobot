@@ -264,10 +264,10 @@ class Robot:
         for _ in range(Config.SENSOR_READ_ATTEMPTS):
             v = 0.0
             try:
-                v = BP.get_sensor(Config.ULTRASONIC_SENSOR) + Config.T        
+                v = BP.get_sensor(Config.ULTRASONIC_SENSOR) + Config.T
             except:
                 continue
-                
+
             print(f"sensor read : {v}cm")
             sum += float(v)
             counter += 1
@@ -356,7 +356,6 @@ class Simulator:
             degrees -= angle
             time.sleep(0.1)
 
-
     def run_navigate_waypoint(self, waypoint, pause_seconds=0.2):
         Wx, Wy = waypoint  # Should be in cm
 
@@ -400,14 +399,14 @@ class Simulator:
             if rank == 2:
                 # particle is pointing to wall for A & B
                 beta = math.acos((mycos(theta) * (Ay - By) + mysin(theta) * (Bx - Ax)) / (
-                            ((Ay - By) ** 2) + ((Bx - Ax) ** 2)) ** 0.5)
+                        ((Ay - By) ** 2) + ((Bx - Ax) ** 2)) ** 0.5)
 
                 max_angle = math.pi / 4
                 if beta > max_angle:
                     return 1
 
                 m = ((By - Ay) * (Ax - x) - (Bx - Ax) * (Ay - y)) / (
-                            (By - Ay) * mycos(theta) - (Bx - Ax) * mysin(theta))
+                        (By - Ay) * mycos(theta) - (Bx - Ax) * mysin(theta))
 
                 likelihood = math.exp(-((z - m) ** 2) / (2 * Config.STDDEV_SENSOR ** 2))
 
@@ -426,9 +425,9 @@ class Simulator:
             m = ((By - Ay) * (Ax - x) - (Bx - Ax) * (Ay - y)) / ((By - Ay) * mycos(theta) - (Bx - Ax) * mysin(theta))
             if m < 0:
                 m = float('inf')
-                
 
-            beta = math.acos((mycos(theta) * (Ay - By) + mysin(theta) * (Bx - Ax)) / (((Ay - By) ** 2) + ((Bx - Ax) ** 2)) ** 0.5)
+            beta = math.acos(
+                (mycos(theta) * (Ay - By) + mysin(theta) * (Bx - Ax)) / (((Ay - By) ** 2) + ((Bx - Ax) ** 2)) ** 0.5)
             if beta > 50.0 * math.pi / 180.0:
                 likelihood = 1
             else:
