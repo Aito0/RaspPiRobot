@@ -259,19 +259,22 @@ class Robot:
 
     @staticmethod
     def read_sensor():
-        N = 3
-
-        values = []
+        counter = 0
+        sum = 0.0
         for _ in range(Config.SENSOR_READ_ATTEMPTS):
+            v = 0.0
             try:
-                v = BP.get_sensor(Config.ULTRASONIC_SENSOR) + Config.T
-                values.append(v)
-                if len(v) == N:
-                    break
+                v = BP.get_sensor(Config.ULTRASONIC_SENSOR) + Config.T        
             except:
                 continue
+                
+            print(f"sensor read : {v}cm")
+            sum += float(v)
+            counter += 1
+            if counter == 3:
+                break
 
-        value = float(sum(values)) / float(N)
+        value = sum / counter
         print(f"Read sensor: {value}cm")
         return value
 
@@ -423,7 +426,7 @@ class Simulator:
             m = ((By - Ay) * (Ax - x) - (Bx - Ax) * (Ay - y)) / ((By - Ay) * mycos(theta) - (Bx - Ax) * mysin(theta))
             if m < 0:
                 m = float('inf')
-
+                
 
             beta = math.acos((mycos(theta) * (Ay - By) + mysin(theta) * (Bx - Ax)) / (((Ay - By) ** 2) + ((Bx - Ax) ** 2)) ** 0.5)
             if beta > 50.0 * math.pi / 180.0:
